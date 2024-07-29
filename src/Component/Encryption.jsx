@@ -30,7 +30,7 @@ const Encryption = () => {
     const keyBlob = new Blob([secretKey], {
       type: "text/plain;charset=utf-8",
     });
-    saveAs(keyBlob, `${fileName.split(".")[0]}-key-encrypted.txt`);
+    saveAs(keyBlob, `${fileName.split(".")[0]}-key.txt`);
   };
 
   const onFileSelected = async (file) => {

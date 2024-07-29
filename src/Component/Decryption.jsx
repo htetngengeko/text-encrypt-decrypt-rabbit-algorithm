@@ -64,7 +64,7 @@ const Decryption = () => {
           onFileSelected={onKeyFileSelected}
           fileName={keyFileName}
           setFileName={setKeyFileName}
-          label="Drag or drop your encryped key file"
+          label="Drag or drop your key file"
         />
       </Box>
       <Box sx={{ display: "flex", mb: 2 }}>

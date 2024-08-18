@@ -9,9 +9,13 @@ import {
 } from "@mui/material";
 import CryptoJS from "crypto-js";
 import { saveAs } from "file-saver";
+import * as pdfjsLib from "pdfjs-dist/build/pdf";
+import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import Randomstring from "randomstring";
 import React, { useState } from "react";
 import FileDropZone from "./FileDropZone";
+
+pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
 
 const Encryption = () => {
   const [plainText, setPlainText] = useState("");
@@ -33,10 +37,39 @@ const Encryption = () => {
     saveAs(keyBlob, `${fileName.split(".")[0]}-key.txt`);
   };
 
-  const onFileSelected = async (file) => {
+  const onFileSelected = (file) => {
+    if (file.name.endsWith(".docx")) {
+      handleDocxFile(file);
+    } else if (file.name.endsWith(".pdf")) {
+      handlePdfFile(file);
+    } else if (file.name.endsWith(".txt")) {
+      handleTxtFile(file);
+    }
+  };
+
+  const handleTxtFile = async (file) => {
     const fileContent = await file.text();
     setPlainText(fileContent);
   };
+
+  const handlePdfFile = async (file) => {
+    const typedArray = new Uint8Array(await file.arrayBuffer());
+    const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+    const textContent = await extractTextFromPDF(pdf);
+    setPlainText(textContent);
+  };
+
+  const extractTextFromPDF = async (pdf) => {
+    let text = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      const pageText = content.items.map((item) => item.str).join(" ");
+      text += pageText + "\n";
+    }
+    return text;
+  };
+
   return (
     <Box
       sx={{
@@ -83,46 +116,10 @@ const Encryption = () => {
         />
       </Box>
 
-      {/* IV */}
-      {/* <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
-          <TextField
-            disabled={mode === "ECB" ? true : false}
-            label="Initialization Vector (Optional)"
-            value={initializationVector}
-            fullWidth
-            sx={{ mr: 1 }}
-            InputProps={{
-              readOnly: true,
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    disabled={mode === "ECB" ? true : false}
-                    sx={{ mr: 1 }}
-                    onClick={() =>
-                      setInitializationVector(randomBytes(8).toString("hex"))
-                    }
-                  >
-                    <AutoFixHighIcon />
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
-          <ToggleButtonGroup
-            color="primary"
-            value={mode}
-            exclusive
-            onChange={(evt, value) => {
-              if (value !== null) {
-                setInitializationVector("");
-                setMode(value);
-              }
-            }}
-          >
-            <ToggleButton value="ECB">ECB</ToggleButton>
-            <ToggleButton value="CBC">CBC</ToggleButton>
-          </ToggleButtonGroup>
-        </Box> */}
+      <Box sx={{ display: "flex", mb: 2 }}>
+        <TextField label="Original Text" value={plainText} fullWidth />
+      </Box>
+
       <Box sx={{ display: "flex", mb: 2 }}>
         <TextField label="Cipher Text" value={cipherText} fullWidth />
       </Box>

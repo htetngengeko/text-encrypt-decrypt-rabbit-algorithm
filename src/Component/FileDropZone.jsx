@@ -7,9 +7,13 @@ const FileDropZone = ({ onFileSelected, fileName, setFileName, label }) => {
     onFileSelected(acceptedFiles[0]);
   };
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
-    accept: { "txt/plain": [".txt"] },
+    accept: {
+      "text/plain": [".txt"],
+      "application/pdf": [".pdf"],
+    },
     onDrop,
   });
+
   return (
     <Box
       {...getRootProps()}

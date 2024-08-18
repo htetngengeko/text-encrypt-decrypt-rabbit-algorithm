@@ -38,9 +38,7 @@ const Encryption = () => {
   };
 
   const onFileSelected = (file) => {
-    if (file.name.endsWith(".docx")) {
-      handleDocxFile(file);
-    } else if (file.name.endsWith(".pdf")) {
+    if (file.name.endsWith(".pdf")) {
       handlePdfFile(file);
     } else if (file.name.endsWith(".txt")) {
       handleTxtFile(file);

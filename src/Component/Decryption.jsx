@@ -32,10 +32,6 @@ const Decryption = () => {
     setSecretKey(fileContent);
   };
 
-  // const decryptText = () => {
-  //   const decrypted = CryptoJS.Rabbit.decrypt(ciphertext, key);
-  //   setDecryptedText(decrypted.toString(CryptoJS.enc.Utf8));
-  // };
   return (
     <Box
       sx={{

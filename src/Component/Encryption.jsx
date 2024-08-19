@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import CryptoJS from "crypto-js";
 import { saveAs } from "file-saver";
+import jsPDF from "jspdf";
 import * as pdfjsLib from "pdfjs-dist/build/pdf";
 import pdfjsWorker from "pdfjs-dist/build/pdf.worker.entry";
 import Randomstring from "randomstring";
@@ -21,20 +22,15 @@ const Encryption = () => {
   const [plainText, setPlainText] = useState("");
   const [secretKey, setSecretKey] = useState("");
   const [cipherText, setCipherText] = useState("");
+  const [cipherPDF, setCipherPDF] = useState("");
   const [fileName, setFileName] = useState("");
 
   const handleEncrypt = () => {
-    const encrypted = CryptoJS.Rabbit.encrypt(plainText, secretKey).toString();
-    setCipherText(encrypted);
-    const textBlob = new Blob([encrypted], {
-      type: "text/plain;charset=utf-8",
-    });
-    saveAs(textBlob, `${fileName.split(".")[0]}-text-encrypted.txt`);
-
-    const keyBlob = new Blob([secretKey], {
-      type: "text/plain;charset=utf-8",
-    });
-    saveAs(keyBlob, `${fileName.split(".")[0]}-key.txt`);
+    if (fileName.split(".")[fileName.length - 1] === ".txt") {
+      handleTextEncrypt();
+    } else {
+      handlePDFEncrypt();
+    }
   };
 
   const onFileSelected = (file) => {
@@ -50,11 +46,44 @@ const Encryption = () => {
     setPlainText(fileContent);
   };
 
+  const handleTextEncrypt = () => {
+    const encrypted = CryptoJS.Rabbit.encrypt(plainText, secretKey).toString();
+    setCipherText(encrypted);
+    const textBlob = new Blob([encrypted], {
+      type: "text/plain;charset=utf-8",
+    });
+    saveAs(textBlob, `${fileName.split(".")[0]}-text-encrypted.txt`);
+
+    const keyBlob = new Blob([secretKey], {
+      type: "text/plain;charset=utf-8",
+    });
+    saveAs(keyBlob, `${fileName.split(".")[0]}-key.txt`);
+  };
+
   const handlePdfFile = async (file) => {
     const typedArray = new Uint8Array(await file.arrayBuffer());
     const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
     const textContent = await extractTextFromPDF(pdf);
     setPlainText(textContent);
+  };
+
+  const handlePDFEncrypt = () => {
+    const encrypted = CryptoJS.Rabbit.encrypt(plainText, secretKey).toString();
+    setCipherPDF(encrypted);
+
+    const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text(encrypted, 10, 10);
+
+    // Save the PDF as a Blob
+    const pdfBlob = doc.output("blob");
+    saveAs(pdfBlob, `${fileName.split(".")[0]}-text-encrypted.pdf`);
+
+    // Save the secret key as a .txt file
+    const keyBlob = new Blob([secretKey], {
+      type: "text/plain;charset=utf-8",
+    });
+    saveAs(keyBlob, `${fileName.split(".")[0]}-key.txt`);
   };
 
   const extractTextFromPDF = async (pdf) => {
